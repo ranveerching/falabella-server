@@ -32,7 +32,7 @@ router.post('/', [authMiddleware, isAdminMiddleware], async (req, res) => {
 
     adminMailTemplate.render({
       content: reqBody.emailContent,
-    }, async (err, adminMailHtml) => {
+    }, (err, adminMailHtml) => {
       if (err) {
         console.log('Mail template render error!');
       }
@@ -47,7 +47,9 @@ router.post('/', [authMiddleware, isAdminMiddleware], async (req, res) => {
         }
       };
 
-      await transporter.sendMail({ ...mailOptions });
+      transporter.sendMail({ ...mailOptions })
+        .then(() => console.log('Mail send successfully!'))
+        .catch(err => console.log(err));
 
       return res.status(200).send({ message: 'Mail send successfully!' });
     });
