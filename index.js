@@ -51,10 +51,10 @@ app.use(cors({
   optionsSuccessStatus: 200
 }));
 
-app.use("/task/api/auth", authRouter);
-app.use("/task/api/setAdmin", setAdminRouter);
-app.use("/task/api/setRegistered", setRegisteredRouter);
-app.use("/task/api/getRegisteredUsers", getRegisteredUsers);
-app.use("/task/api/sendMailToUsers", sendMailToUsers);
+app.use("/auth", authRouter);
+app.use("/setAdmin", setAdminRouter);
+app.use("/setRegistered", setRegisteredRouter);
+app.use("/getRegisteredUsers", getRegisteredUsers);
+app.use("/sendMailToUsers", sendMailToUsers);
 
 app.listen(PORT, console.log(`Running on port ${PORT}`));
