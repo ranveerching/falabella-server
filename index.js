@@ -1,12 +1,10 @@
-const PORT = process.env.PORT || 5001;
+const PORT = 3000;
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const cors = require('cors');
 require("dotenv").config();
 
 const authRouter = require("./src/routes/auth");
-const setAdminRouter = require("./src/routes/setAdmin");
 const setRegisteredRouter = require("./src/routes/setRegistered");
 const getRegisteredUsers = require("./src/routes/getRegisteredUsers");
 const sendMailToUsers = require("./src/routes/sendMailsToUsers");
@@ -21,40 +19,52 @@ mongoose
 mongoose.set("debug", true);
 
 app.use(express.json());
-app.use((_, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
+
+app.all("*", function (req, res, next) {
+  const responseSettings = {
+    AccessControlAllowOrigin: req.headers.origin,
+    AccessControlAllowHeaders:
+      "Content-Type,X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version, X-File-Name",
+    AccessControlAllowMethods: "POST, GET, PUT, DELETE, OPTIONS",
+    AccessControlExposeHeaders: "x-auth-token",
+    AccessControlAllowCredentials: true
+  };
+
   res.header(
-    "Access-Control-Expose-Headers",
-    "x-auth-token"
+    "Access-Control-Allow-Credentials",
+    responseSettings.AccessControlAllowCredentials
+  );
+  res.header(
+    "Access-Control-Allow-Origin",
+    responseSettings.AccessControlAllowOrigin
   );
   res.header(
     "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
+    req.headers["access-control-request-headers"]
+      ? req.headers["access-control-request-headers"]
+      : "x-requested-with"
   );
-  next();
+  res.header(
+    "Access-Control-Expose-Headers",
+    responseSettings.AccessControlExposeHeaders
+  );
+  res.header(
+    "Access-Control-Allow-Methods",
+    req.headers["access-control-request-method"]
+      ? req.headers["access-control-request-method"]
+      : responseSettings.AccessControlAllowMethods
+  );
+
+  if ("OPTIONS" == req.method) {
+    res.send(200);
+  } else {
+    next();
+  }
 });
 
-const corsWhiteList = [
-  'http://localhost:3000',
-  'http://localhost:3009',
-];
-
-app.use(cors({
-  origin(origin, callback) {
-    if (!origin) return callback(null, true);
-    if (corsWhiteList.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  optionsSuccessStatus: 200
-}));
-
 app.use("/auth", authRouter);
-app.use("/setAdmin", setAdminRouter);
 app.use("/setRegistered", setRegisteredRouter);
 app.use("/getRegisteredUsers", getRegisteredUsers);
 app.use("/sendMailToUsers", sendMailToUsers);
 
-app.listen(PORT, console.log(`Running on port ${PORT}`));
+app.listen(PORT);
